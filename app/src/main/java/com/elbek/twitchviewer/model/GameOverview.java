@@ -1,54 +1,45 @@
 package com.elbek.twitchviewer.model;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class GameOverview {
 
+    @SerializedName("game")
+    @Expose
+    private Game game;
+    @SerializedName("viewers")
+    @Expose
     private Integer viewers;
+    @SerializedName("channels")
+    @Expose
     private Integer channels;
 
-    @SerializedName("game")
-    public GameDetails gameDetails;
+    public Game getGame() {
+        return game;
+    }
 
-    public void setViewers(int viewers) {
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public Integer getViewers() {
+        return viewers;
+    }
+
+    public void setViewers(Integer viewers) {
         this.viewers = viewers;
     }
 
-    public void setChannels(int channels) {
+    public Integer getChannels() {
+        return channels;
+    }
+
+    public void setChannels(Integer channels) {
         this.channels = channels;
     }
 
-    public void setGameDetails(GameDetails gameDetails) {
-        this.gameDetails = gameDetails;
-    }
-
-    public class GameDetails {
-
-        public String name;
-
-        @SerializedName("box")
-        public Box box;
-
-        @SerializedName("logo")
-        public Logo logo;
-
-    }
-
-    public class Box {
-
-        public String large;
-        public String medium;
-        public String small;
-        public String template;
-
-    }
-
-    public class Logo {
-
-        public String large;
-        public String medium;
-        public String small;
-        public String template;
-    }
-
 }
+
+
+
