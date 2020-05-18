@@ -1,5 +1,7 @@
 package com.elbek.twitchviewer.model;
 
+import androidx.room.Entity;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TwitchViewer</string>
+    <string name="rate_application">Rate application</string>
 </resources>

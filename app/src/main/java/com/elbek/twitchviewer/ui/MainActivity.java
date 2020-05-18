@@ -1,9 +1,12 @@
 package com.elbek.twitchviewer.ui;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
@@ -12,10 +15,11 @@ import android.widget.ProgressBar;
 import com.elbek.twitchviewer.R;
 import com.elbek.twitchviewer.api.ApiClient;
 import com.elbek.twitchviewer.api.ApiService;
+import com.elbek.twitchviewer.database.AppDatabase;
+import com.elbek.twitchviewer.database.GameOverviewDao;
 import com.elbek.twitchviewer.model.GameOverview;
 import com.elbek.twitchviewer.model.TopGamesResponse;
 import com.elbek.twitchviewer.ui.adapter.RecyclerAdapter;
-import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -28,11 +32,12 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager linearLayoutManager;
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
+
     private ApiService apiService;
+    private GameOverviewDao db;
 
     private ProgressBar progressBar;
-
-    Boolean isScrolling = false;
+    private Boolean isScrolling = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +47,31 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.main_progress);
 
         linearLayoutManager = new LinearLayoutManager(this);
-        //linearLayoutManager.setInitialPrefetchItemCount(5);
+        linearLayoutManager.setInitialPrefetchItemCount(5);
 
         recyclerView = findViewById(R.id.recycler_list);
-        //recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        //init DB
+        db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "streams-database")
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build()
+                .getArticleDao();
+
         apiService = ApiClient.getClient().create(ApiService.class);
-        performPagination();
+        getStreams();
+
     }
 
-    private void performPagination() {
+    public void setRecyclerAdapter(List<GameOverview> streams) {
+        adapter = new RecyclerAdapter(streams, MainActivity.this);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void getStreams() {
         progressBar.setVisibility(View.VISIBLE);
         Call<TopGamesResponse> call = apiService.topGamesResponse();
 
@@ -60,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<TopGamesResponse> call, Response<TopGamesResponse> response) {
                 if (response.isSuccessful()) {
-                    //System.out.println(new Gson().toJson(response.body()));
                     List<GameOverview> streams = response.body().getTop();
                     setRecyclerAdapter(streams);
+                    db.insertAll(streams);
                     progressBar.setVisibility(View.INVISIBLE);
                 }
             }
@@ -74,12 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setRecyclerAdapter(List<GameOverview> streams) {
-        adapter = new RecyclerAdapter(streams, MainActivity.this);
-        recyclerView.setAdapter(adapter);
-        System.out.println("SUKKKKKKKKAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa");
-    }
-
+    //TODO dynamic load data
     private void onScrollListener() {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -104,4 +118,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 }

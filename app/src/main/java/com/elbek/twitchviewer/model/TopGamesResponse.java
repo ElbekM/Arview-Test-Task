@@ -29,16 +29,4 @@ public class TopGamesResponse {
     public void setTop(List<GameOverview> top) {
         this.top = top;
     }
-
-    /*@SerializedName("gameOverview")
-    @Expose
-    private List<GameOverview> gameOverview = null;
-
-    public List<GameOverview> getGameOverview() {
-        return gameOverview;
-    }
-
-    public void setGameOverview(List<GameOverview> gameOverview) {
-        this.gameOverview = gameOverview;
-    }*/
 }

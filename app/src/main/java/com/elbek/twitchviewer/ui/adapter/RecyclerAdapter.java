@@ -17,7 +17,7 @@ import com.elbek.twitchviewer.model.GameOverview;
 
 import java.util.List;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyViewHolder>{
+public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyViewHolder> {
 
     private List<GameOverview> streamList;
     private Context context;
@@ -52,13 +52,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         return streamList.size();
     }
 
-    public void addNews(List<GameOverview> news) {
+    public void addStreams(List<GameOverview> news) {
         streamList.addAll(news);
         notifyDataSetChanged();
-    }
-
-    public List<GameOverview> getNewsList() {
-        return streamList;
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {

@@ -1,28 +1,41 @@
 package com.elbek.twitchviewer.model;
 
+import androidx.room.Embedded;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Game {
 
+    @NotNull
     @SerializedName("name")
     @Expose
     private String name;
+    @NotNull
     @SerializedName("_id")
     @Expose
     private Integer id;
+    @NotNull
     @SerializedName("giantbomb_id")
     @Expose
     private Integer giantbombId;
+    @Embedded(prefix = "client_bean_")
     @SerializedName("box")
     @Expose
     private Box box;
+    @Embedded
     @SerializedName("logo")
     @Expose
     private Logo logo;
+    @NotNull
     @SerializedName("localized_name")
     @Expose
     private String localizedName;
+    @NotNull
     @SerializedName("locale")
     @Expose
     private String locale;
