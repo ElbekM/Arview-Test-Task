@@ -1,11 +1,15 @@
 package com.elbek.twitchviewer.ui;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -66,6 +70,23 @@ public class MainActivity extends AppCompatActivity {
         getStreamData();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.review:
+                showReviewDialog();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void getStreamData() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -113,4 +134,26 @@ public class MainActivity extends AppCompatActivity {
         db.insertAll(streams);
     }
 
+    private void showReviewDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setView(R.layout.rate_dialog)
+                .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Rate logic
+                        Toast.makeText(MainActivity.this, "Thanks for the feedback", Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                })
+                .setNegativeButton("Rate later", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(MainActivity.this, "Okay(", Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
+
+        builder.create().show();
+    }
 }
