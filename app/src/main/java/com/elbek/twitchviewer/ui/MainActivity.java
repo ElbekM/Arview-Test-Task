@@ -5,12 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -40,23 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private TwitchStreamDao db;
 
     private ProgressBar progressBar;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private LinearLayout errorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        progressBar = findViewById(R.id.main_progress);
-
-        linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setInitialPrefetchItemCount(5);
-
-        recyclerView = findViewById(R.id.recycler_list);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(linearLayoutManager);
-
-        adapter = new TwitchStreamAdapter(MainActivity.this);
-        recyclerView.setAdapter(adapter);
+        initViews();
 
         // Room Database init
         AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -68,6 +62,33 @@ public class MainActivity extends AppCompatActivity {
         db = appDatabase.getTwitchStreamDao();
 
         getStreamData();
+    }
+
+    private void initViews() {
+
+        progressBar = findViewById(R.id.main_progress);
+        errorLayout = findViewById(R.id.error_layout);
+
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+
+        linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setInitialPrefetchItemCount(5);
+
+        recyclerView = findViewById(R.id.recycler_list);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        adapter = new TwitchStreamAdapter(MainActivity.this);
+        recyclerView.setAdapter(adapter);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(false);
+                getStreamData();
+            }
+        });
     }
 
     @Override
@@ -88,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getStreamData() {
-        progressBar.setVisibility(View.VISIBLE);
+        showLoading();
 
         ApiService apiService = ApiClient.getApiClient().create(ApiService.class);
         Observable<TopGamesResponse> call = apiService.getTopGamesResponse();
@@ -110,15 +131,14 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onError(Throwable e) {
                         setData(db.getAllArticles());
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(MainActivity.this, "Loaded from database", Toast.LENGTH_SHORT)
-                                .show();
+                        hideLoading();
+                        showError(e.getMessage());
                         //Log(e.getMessage());
                     }
 
                     @Override
                     public void onComplete() {
-                        progressBar.setVisibility(View.GONE);
+                        hideLoading();
                     }
                 });
     }
@@ -132,6 +152,21 @@ public class MainActivity extends AppCompatActivity {
         if (!db.getAllArticles().isEmpty())
             db.deleteAll();
         db.insertAll(streams);
+    }
+
+    public void showLoading() {
+        errorLayout.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void hideLoading() {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    public void showError(String message) {
+        errorLayout.setVisibility(View.VISIBLE);
+        Toast.makeText(MainActivity.this, "Loaded from database", Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void showReviewDialog() {
