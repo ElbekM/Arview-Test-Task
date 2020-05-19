@@ -1,44 +1,24 @@
 package com.elbek.twitchviewer.model;
 
 import androidx.room.Embedded;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import org.jetbrains.annotations.NotNull;
 
 public class Game {
 
-    @NotNull
     @SerializedName("name")
     @Expose
     private String name;
-    @NotNull
-    @SerializedName("_id")
-    @Expose
-    private Integer id;
-    @NotNull
-    @SerializedName("giantbomb_id")
-    @Expose
-    private Integer giantbombId;
-    @Embedded(prefix = "client_bean_")
+    @Embedded
     @SerializedName("box")
     @Expose
     private Box box;
-    @Embedded
+    @Embedded(prefix = "logo")
     @SerializedName("logo")
     @Expose
     private Logo logo;
-    @NotNull
-    @SerializedName("localized_name")
-    @Expose
-    private String localizedName;
-    @NotNull
-    @SerializedName("locale")
-    @Expose
-    private String locale;
 
     public String getName() {
         return name;
@@ -46,22 +26,6 @@ public class Game {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getGiantbombId() {
-        return giantbombId;
-    }
-
-    public void setGiantbombId(Integer giantbombId) {
-        this.giantbombId = giantbombId;
     }
 
     public Box getBox() {
@@ -80,20 +44,35 @@ public class Game {
         this.logo = logo;
     }
 
-    public String getLocalizedName() {
-        return localizedName;
+    public static class Box {
+
+        @SerializedName("large")
+        @Expose
+        private String large;
+
+        public String getLarge() {
+            return large;
+        }
+
+        public void setLarge(String large) {
+            this.large = large;
+        }
+
     }
 
-    public void setLocalizedName(String localizedName) {
-        this.localizedName = localizedName;
-    }
+    public static class Logo {
 
-    public String getLocale() {
-        return locale;
-    }
+        @SerializedName("large")
+        @Expose
+        private String large;
 
-    public void setLocale(String locale) {
-        this.locale = locale;
+        public String getLarge() {
+            return large;
+        }
+
+        public void setLarge(String large) {
+            this.large = large;
+        }
     }
 
 }

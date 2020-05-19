@@ -7,26 +7,11 @@ import java.util.List;
 
 public class TopGamesResponse {
 
-    @SerializedName("_total")
-    @Expose
-    private Integer total;
     @SerializedName("top")
     @Expose
-    private List<GameOverview> top = null;
+    private List<TwitchStream> topGames = null;
 
-    public Integer getTotal() {
-        return total;
-    }
-
-    public void setTotal(Integer total) {
-        this.total = total;
-    }
-
-    public List<GameOverview> getTop() {
-        return top;
-    }
-
-    public void setTop(List<GameOverview> top) {
-        this.top = top;
+    public List<TwitchStream> getTopGames() {
+        return topGames;
     }
 }

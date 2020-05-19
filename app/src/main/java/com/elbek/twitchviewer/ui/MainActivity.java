@@ -1,43 +1,41 @@
 package com.elbek.twitchviewer.ui;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.elbek.twitchviewer.R;
 import com.elbek.twitchviewer.api.ApiClient;
 import com.elbek.twitchviewer.api.ApiService;
 import com.elbek.twitchviewer.database.AppDatabase;
-import com.elbek.twitchviewer.database.GameOverviewDao;
-import com.elbek.twitchviewer.model.GameOverview;
+import com.elbek.twitchviewer.database.TwitchStreamDao;
+import com.elbek.twitchviewer.model.TwitchStream;
 import com.elbek.twitchviewer.model.TopGamesResponse;
-import com.elbek.twitchviewer.ui.adapter.RecyclerAdapter;
+import com.elbek.twitchviewer.ui.adapter.TwitchStreamAdapter;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     private LinearLayoutManager linearLayoutManager;
     private RecyclerView recyclerView;
-    private RecyclerAdapter adapter;
+    private TwitchStreamAdapter adapter;
 
-    private ApiService apiService;
-    private GameOverviewDao db;
+    private TwitchStreamDao db;
 
     private ProgressBar progressBar;
-    private Boolean isScrolling = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,70 +51,66 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        //init DB
-        db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "streams-database")
+        adapter = new TwitchStreamAdapter(MainActivity.this);
+        recyclerView.setAdapter(adapter);
+
+        // Room Database init
+        AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "twitch-database")
                 .fallbackToDestructiveMigration()
                 .allowMainThreadQueries()
-                .build()
-                .getArticleDao();
+                .build();
 
-        apiService = ApiClient.getClient().create(ApiService.class);
-        getStreams();
+        db = appDatabase.getTwitchStreamDao();
 
+        getStreamData();
     }
 
-    public void setRecyclerAdapter(List<GameOverview> streams) {
-        adapter = new RecyclerAdapter(streams, MainActivity.this);
-        recyclerView.setAdapter(adapter);
-    }
-
-    private void getStreams() {
+    private void getStreamData() {
         progressBar.setVisibility(View.VISIBLE);
-        Call<TopGamesResponse> call = apiService.topGamesResponse();
 
-        call.enqueue(new Callback<TopGamesResponse>() {
-            @Override
-            public void onResponse(Call<TopGamesResponse> call, Response<TopGamesResponse> response) {
-                if (response.isSuccessful()) {
-                    List<GameOverview> streams = response.body().getTop();
-                    setRecyclerAdapter(streams);
-                    db.insertAll(streams);
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
-            }
+        ApiService apiService = ApiClient.getApiClient().create(ApiService.class);
+        Observable<TopGamesResponse> call = apiService.getTopGamesResponse();
 
-            @Override
-            public void onFailure(Call<TopGamesResponse> call, Throwable t) {
-                System.out.println(t.getMessage());
-            }
-        });
+        call.subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<TopGamesResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(TopGamesResponse topGamesResponse) {
+                        List<TwitchStream> streams = topGamesResponse.getTopGames();
+                        setData(streams);
+                        cacheToDatabase(streams);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        setData(db.getAllArticles());
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(MainActivity.this, "Loaded from database", Toast.LENGTH_SHORT)
+                                .show();
+                        //Log(e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
     }
 
-    //TODO dynamic load data
-    private void onScrollListener() {
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
-                    isScrolling = true;
-                }
-            }
+    private void setData(List<TwitchStream> streams) {
+        adapter.clear();
+        adapter.addAll(streams);
+    }
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                int currentItems = linearLayoutManager.getChildCount();
-                int totalItems = linearLayoutManager.getItemCount();
-                int scrollOutItems = linearLayoutManager.findFirstVisibleItemPosition();
-
-                if(isScrolling && (currentItems + scrollOutItems == totalItems)) {
-                    isScrolling = false;
-                    //performPagination();
-                }
-            }
-        });
+    private void cacheToDatabase(List<TwitchStream> streams) {
+        if (!db.getAllArticles().isEmpty())
+            db.deleteAll();
+        db.insertAll(streams);
     }
 
 }

@@ -3,19 +3,15 @@ package com.elbek.twitchviewer.model;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
-import com.elbek.twitchviewer.database.DateConverter;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import org.jetbrains.annotations.NotNull;
+@Entity(tableName = "twitchStreams")
+public class TwitchStream {
 
-@Entity(tableName = "streams")
-public class GameOverview {
-
-    //@TypeConverters(DateConverter.class)
-
+    @PrimaryKey(autoGenerate = true)
+    public Integer idKey;
     @Embedded
     @SerializedName("game")
     @Expose
@@ -23,8 +19,6 @@ public class GameOverview {
     @SerializedName("viewers")
     @Expose
     private Integer viewers;
-    @PrimaryKey
-    @NotNull
     @SerializedName("channels")
     @Expose
     private Integer channels;

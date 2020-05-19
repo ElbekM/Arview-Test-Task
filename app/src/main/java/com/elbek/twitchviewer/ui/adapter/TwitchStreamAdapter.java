@@ -13,32 +13,33 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.elbek.twitchviewer.R;
-import com.elbek.twitchviewer.model.GameOverview;
+import com.elbek.twitchviewer.model.TwitchStream;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyViewHolder> {
+public class TwitchStreamAdapter extends RecyclerView.Adapter<TwitchStreamAdapter.GameViewHolder> {
 
-    private List<GameOverview> streamList;
+    private List<TwitchStream> streamList;
     private Context context;
 
-    public RecyclerAdapter(List<GameOverview> streamList, Context context) {
-        this.streamList = streamList;
+    public TwitchStreamAdapter(Context context) {
+        streamList = new ArrayList<>();
         this.context = context;
     }
 
     @NonNull
     @Override
-    public RecyclerAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public GameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_list, parent, false);
-        return new MyViewHolder(view);
+        return new GameViewHolder(view);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull RecyclerAdapter.MyViewHolder holder, int position) {
-        final GameOverview stream = streamList.get(position);
+    public void onBindViewHolder(@NonNull GameViewHolder holder, int position) {
+        final TwitchStream stream = streamList.get(position);
         holder.streamGameName.setText(stream.getGame().getName());
         holder.streamChannels.setText("Channels: " + stream.getChannels().toString());
         holder.streamViews.setText("Views: " + stream.getViewers().toString());
@@ -52,19 +53,25 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         return streamList.size();
     }
 
-    public void addStreams(List<GameOverview> news) {
+    public void addAll(List<TwitchStream> news) {
         streamList.addAll(news);
         notifyDataSetChanged();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    public void clear(){
+        int size = streamList.size();
+        streamList.clear();
+        notifyItemRangeRemoved(0, size);
+    }
+
+    class GameViewHolder extends RecyclerView.ViewHolder {
 
         ImageView streamImage;
         TextView streamGameName;
         TextView streamChannels;
         TextView streamViews;
 
-        public MyViewHolder(@NonNull View itemView) {
+        GameViewHolder(@NonNull View itemView) {
             super(itemView);
             streamImage = itemView.findViewById(R.id.item_image);
             streamGameName = itemView.findViewById(R.id.item_game_name);
