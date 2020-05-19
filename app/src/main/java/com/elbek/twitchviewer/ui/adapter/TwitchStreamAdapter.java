@@ -1,6 +1,5 @@
 package com.elbek.twitchviewer.ui.adapter;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,13 +35,12 @@ public class TwitchStreamAdapter extends RecyclerView.Adapter<TwitchStreamAdapte
         return new GameViewHolder(view);
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull GameViewHolder holder, int position) {
         final TwitchStream stream = streamList.get(position);
         holder.streamGameName.setText(stream.getGame().getName());
-        holder.streamChannels.setText("Channels: " + stream.getChannels().toString());
-        holder.streamViews.setText("Views: " + stream.getViewers().toString());
+        holder.streamChannels.setText(String.format("Channels: %s", stream.getChannels().toString()));
+        holder.streamViews.setText(String.format("Views: %s", stream.getViewers().toString()));
 
         // Image load
         Glide.with(context).load(stream.getGame().getBox().getLarge()).into(holder.streamImage);
@@ -58,10 +56,9 @@ public class TwitchStreamAdapter extends RecyclerView.Adapter<TwitchStreamAdapte
         notifyDataSetChanged();
     }
 
-    public void clear(){
-        int size = streamList.size();
+    public void clear() {
         streamList.clear();
-        notifyItemRangeRemoved(0, size);
+        notifyItemRangeRemoved(0, getItemCount());
     }
 
     class GameViewHolder extends RecyclerView.ViewHolder {

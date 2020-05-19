@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TwitchViewer</string>
+    <string name="app_name">Twitch Viewer</string>
     <string name="rate_application">Rate application</string>
     <string name="rate_app">RATE APP</string>
     <string name="connection">No Internet Connection</string>

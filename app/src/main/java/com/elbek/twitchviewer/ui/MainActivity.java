@@ -61,7 +61,24 @@ public class MainActivity extends AppCompatActivity {
 
         db = appDatabase.getTwitchStreamDao();
 
-        getStreamData();
+        getTwitchData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.review:
+                showReviewDialog();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void initViews() {
@@ -86,29 +103,38 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 swipeRefreshLayout.setRefreshing(false);
-                getStreamData();
+                getTwitchData();
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    private void setData(List<TwitchStream> streams) {
+        adapter.clear();
+        adapter.addAll(streams);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.review:
-                showReviewDialog();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    private void cacheToDatabase(List<TwitchStream> streams) {
+        if (!db.getAllArticles().isEmpty())
+            db.deleteAll();
+        db.insertAll(streams);
     }
 
-    private void getStreamData() {
+    public void showLoading() {
+        errorLayout.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void hideLoading() {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    public void showError(String message) {
+        errorLayout.setVisibility(View.VISIBLE);
+        Toast.makeText(MainActivity.this, "Loaded from database", Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    private void getTwitchData() {
         showLoading();
 
         ApiService apiService = ApiClient.getApiClient().create(ApiService.class);
@@ -143,32 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void setData(List<TwitchStream> streams) {
-        adapter.clear();
-        adapter.addAll(streams);
-    }
-
-    private void cacheToDatabase(List<TwitchStream> streams) {
-        if (!db.getAllArticles().isEmpty())
-            db.deleteAll();
-        db.insertAll(streams);
-    }
-
-    public void showLoading() {
-        errorLayout.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-    }
-
-    public void hideLoading() {
-        progressBar.setVisibility(View.GONE);
-    }
-
-    public void showError(String message) {
-        errorLayout.setVisibility(View.VISIBLE);
-        Toast.makeText(MainActivity.this, "Loaded from database", Toast.LENGTH_SHORT)
-                .show();
-    }
-
+    // Dialog form logic
     private void showReviewDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
